@@ -27,10 +27,10 @@ def get_token(client_id, client_secret):
         raise Exception(f"Erreur lors de l'obtention du token : {response.status_code} - {response.text}")
 
 # Fonction pour récupérer le numéro SIRET via l'API SIRENE
-def get_siret(name, address, token):
+def get_siret(name, token):
     url = 'https://api.insee.fr/entreprises/sirene/V3.11/siret'
     params = {
-        'q': f'denominationUniteLegale:{urllib.parse.quote(name)} AND adresseEtablissement:{urllib.parse.quote(address)}'
+        'q': f'denominationUniteLegale:"{urllib.parse.quote(name)}"'
     }
     headers = {
         'Authorization': f'Bearer {token}',
@@ -43,7 +43,7 @@ def get_siret(name, address, token):
         if etablissements:
             return etablissements[0].get('siret')
     else:
-        print(f"Erreur lors de la récupération du SIRET pour {name} à {address} : {response.status_code} - {response.text}")
+        print(f"Erreur lors de la récupération du SIRET pour '{name}' : {response.status_code} - {response.text}")
     return "erreur"
 
 # Récupération du token
@@ -54,15 +54,15 @@ try:
     df = pd.read_csv('c:\\Users\\FORMATION6\\Sabathgron\\atypic-lagence\\siret\\siret\\test.csv', encoding='ISO-8859-1')
     
     # Vérification des colonnes requises
-    required_columns = ['Nom client (complet)', 'adresse 1']
+    required_columns = ['Nom client (complet)']
     for col in required_columns:
         if col not in df.columns:
             raise Exception(f"La colonne requise '{col}' est absente du fichier CSV.")
     
     # Ajouter une colonne avec les numéros SIRET
     df['SIRET'] = df.apply(
-        lambda row: get_siret(row['Nom client (complet)'], row['adresse 1'], token)
-        if pd.notnull(row['Nom client (complet)']) and pd.notnull(row['adresse 1'])
+        lambda row: get_siret(row['Nom client (complet)'], token)
+        if pd.notnull(row['Nom client (complet)'])
         else "données manquantes",
         axis=1
     )

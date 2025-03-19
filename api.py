@@ -2,14 +2,13 @@ import requests
 import urllib.parse
 
 # Fonction pour récupérer le numéro SIRET via l'API SIRENE
-def get_siret(name, address, token):
+def get_siret(name, token):
     url = 'https://api.insee.fr/entreprises/sirene/V3.11/siret'
     # Encodage des paramètres pour gérer les espaces et caractères spéciaux
     name_encoded = urllib.parse.quote(name)
-    address_encoded = urllib.parse.quote(address)
-    # Construction de la requête avec la syntaxe correcte
+    # Construction de la requête avec uniquement le nom
     params = {
-        'q': f'denominationUniteLegale:"{name_encoded}" AND adresseEtablissement:"{address_encoded}"'
+        'q': f'denominationUniteLegale:"{name_encoded}"'
     }
     headers = {
         'Authorization': f'Bearer {token}',
@@ -22,5 +21,5 @@ def get_siret(name, address, token):
         if etablissements:
             return etablissements[0].get('siret')
     else:
-        print(f"Erreur lors de la récupération du SIRET pour '{name}' à '{address}' : {response.status_code} - {response.text}")
+        print(f"Erreur lors de la récupération du SIRET pour '{name}' : {response.status_code} - {response.text}")
     return "erreur"
